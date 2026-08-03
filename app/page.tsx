@@ -1,3 +1,4 @@
+import Image from "next/image";
 const properties = [
   {
     id: 1,
@@ -6,6 +7,7 @@ const properties = [
     price: "45,000,000 FCFA",
     details: "3 bedrooms • 2 bathrooms • 350 m²",
     trustScore: 92,
+    image: "/images/villa-ouaga-1.jpg",
   },
   {
     id: 2,
@@ -14,6 +16,7 @@ const properties = [
     price: "175,000 FCFA/month",
     details: "2 bedrooms • 1 bathroom • 95 m²",
     trustScore: 78,
+    image: "/images/villa-ouaga-2.jpg",
   },
   {
     id: 3,
@@ -22,6 +25,7 @@ const properties = [
     price: "12,500,000 FCFA",
     details: "300 m² • Accessible road",
     trustScore: 85,
+    image: "/images/villa-ouaga-3.jpg",
   },
 ];
 
@@ -29,21 +33,32 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <h1 className="text-2xl font-bold text-green-700">FasoHome</h1>
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+    <a href="/" className="text-2xl font-bold text-green-700">
+      FasoHome
+    </a>
 
-          <nav className="hidden gap-6 text-sm font-medium text-gray-700 md:flex">
-            <a href="#">Buy</a>
-            <a href="#">Rent</a>
-            <a href="#">Land</a>
-            <a href="#">Professionals</a>
-          </nav>
+    <nav className="hidden items-center gap-7 text-sm font-semibold text-gray-700 lg:flex">
+      <a href="#properties" className="hover:text-green-700">
+        Buy
+      </a>
 
-          <button className="rounded-lg bg-green-700 px-4 py-2 font-semibold text-white">
-            List a property
-          </button>
-        </div>
-      </header>
+      <a href="#properties" className="hover:text-green-700">
+        Rent
+      </a>
+
+      <a href="#properties" className="hover:text-green-700">
+        Land
+      </a>
+
+     
+    </nav>
+
+    <button className="rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+      List a property
+    </button>
+  </div>
+</header>
 
       <section className="bg-green-900 px-6 py-24 text-white">
         <div className="mx-auto max-w-5xl text-center">
@@ -60,7 +75,7 @@ export default function Home() {
             across Burkina Faso.
           </p>
 
-          <form className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-xl bg-white p-2 shadow-xl md:flex-row">
+          <div className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-xl bg-white p-2 shadow-xl md:flex-row">
             <select className="rounded-lg border px-4 py-4 text-gray-800">
               <option>Buy</option>
               <option>Rent</option>
@@ -79,11 +94,14 @@ export default function Home() {
             >
               Search
             </button>
-          </form>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-14">
+      <section
+  id="properties"
+  className="mx-auto max-w-7xl scroll-mt-24 px-6 py-14"
+>
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900">
             Featured properties
@@ -100,9 +118,27 @@ export default function Home() {
               key={property.id}
               className="overflow-hidden rounded-2xl border bg-white shadow-sm"
             >
-              <div className="flex h-56 items-center justify-center bg-gray-200 text-gray-500">
-                Property image
-              </div>
+             <div className="relative h-56 w-full">
+  <Image
+    src={property.image}
+    alt={property.title}
+    fill
+    className="object-cover"
+  />
+  
+
+  <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-gray-900 shadow">
+    Featured
+  </span>
+
+  <button
+    type="button"
+    aria-label="Save property"
+    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow"
+  >
+    ♡
+  </button>
+</div>
 
               <div className="p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -135,6 +171,29 @@ export default function Home() {
           ))}
         </div>
       </section>
+      <section
+  id="diaspora"
+  className="bg-green-900 px-6 py-16 text-white"
+>
+  <div className="mx-auto max-w-7xl">
+    <p className="font-semibold uppercase tracking-widest text-yellow-400">
+      FasoHome Diaspora
+    </p>
+
+    <h2 className="mt-3 text-3xl font-bold md:text-4xl">
+      Searching from outside Burkina Faso?
+    </h2>
+
+    <p className="mt-5 max-w-2xl leading-7 text-green-100">
+      Request a property inspection, GPS verification, recorded video tour,
+      or live video visit before making a decision.
+    </p>
+
+    <button className="mt-7 rounded-lg bg-yellow-500 px-6 py-3 font-bold text-gray-950 hover:bg-yellow-400">
+      Request an inspection
+    </button>
+  </div>
+</section>
     </main>
   );
 }
