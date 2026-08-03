@@ -1,33 +1,6 @@
 import Image from "next/image";
-const properties = [
-  {
-    id: 1,
-    title: "Modern villa in Ouaga 2000",
-    location: "Ouaga 2000, Ouagadougou",
-    price: "45,000,000 FCFA",
-    details: "3 bedrooms • 2 bathrooms • 350 m²",
-    trustScore: 92,
-    image: "/images/villa-ouaga-1.jpg",
-  },
-  {
-    id: 2,
-    title: "Apartment for rent in Karpala",
-    location: "Karpala, Ouagadougou",
-    price: "175,000 FCFA/month",
-    details: "2 bedrooms • 1 bathroom • 95 m²",
-    trustScore: 78,
-    image: "/images/villa-ouaga-2.jpg",
-  },
-  {
-    id: 3,
-    title: "Residential land in Balkuy",
-    location: "Balkuy, Ouagadougou",
-    price: "12,500,000 FCFA",
-    details: "300 m² • Accessible road",
-    trustScore: 85,
-    image: "/images/villa-ouaga-3.jpg",
-  },
-];
+import Link from "next/link";
+import { properties } from "./data/properties";
 
 export default function Home() {
   return (
@@ -163,9 +136,12 @@ export default function Home() {
                   {property.location}
                 </p>
 
-                <button className="mt-5 w-full rounded-lg border border-green-700 px-4 py-3 font-semibold text-green-700">
-                  View property
-                </button>
+         <Link
+  href={`/properties/${property.id}`}
+  className="mt-5 block w-full rounded-lg border border-green-700 px-4 py-3 text-center font-semibold text-green-700 transition hover:bg-green-700 hover:text-white"
+>
+  View property
+</Link>
               </div>
             </article>
           ))}
