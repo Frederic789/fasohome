@@ -1,16 +1,69 @@
 "use client";
-
+import { supabase } from "../lib/supabase";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 export default function ListPropertyPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-    setSubmitted(true);
+  setSubmitting(true);
+  setErrorMessage("");
+
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+
+  const propertyData = {
+    title: formData.get("title") as string,
+    transaction_type: formData.get("transactionType") as string,
+    property_type: formData.get("propertyType") as string,
+    price: Number(formData.get("price")),
+
+    city: formData.get("city") as string,
+    neighborhood: formData.get("neighborhood") as string,
+    sector: (formData.get("sector") as string) || null,
+    landmark: (formData.get("landmark") as string) || null,
+
+    bedrooms: Number(formData.get("bedrooms") || 0),
+    bathrooms: Number(formData.get("bathrooms") || 0),
+    area: Number(formData.get("area")),
+
+    description: formData.get("description") as string,
+
+    has_water: formData.get("hasWater") === "on",
+    has_electricity: formData.get("hasElectricity") === "on",
+    has_solar: formData.get("hasSolar") === "on",
+    has_parking: formData.get("hasParking") === "on",
+    has_fence: formData.get("hasFence") === "on",
+    paved_road_access:
+      formData.get("pavedRoadAccess") === "on",
+
+    phone_number: formData.get("phoneNumber") as string,
+    whatsapp_number:
+      (formData.get("whatsappNumber") as string) || null,
+
+    status: "pending",
+  };
+
+  const { error } = await supabase
+    .from("properties")
+    .insert(propertyData);
+
+  if (error) {
+    console.error(error);
+    setErrorMessage(error.message);
+    setSubmitting(false);
+    return;
   }
+
+  setSubmitting(false);
+  setSubmitted(true);
+  form.reset();
+}
 
   if (submitted) {
     return (
@@ -314,12 +367,19 @@ export default function ListPropertyPage() {
               Cancel
             </Link>
 
+            {errorMessage && (
+  <div className="mt-6 rounded-lg bg-red-50 p-4 text-sm font-medium text-red-700">
+    {errorMessage}
+  </div>
+)}
+
             <button
-              type="submit"
-              className="rounded-lg bg-green-700 px-8 py-4 font-bold text-white hover:bg-green-800"
-            >
-              Submit property
-            </button>
+  type="submit"
+  disabled={submitting}
+  className="rounded-lg bg-green-700 px-8 py-4 font-bold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60"
+>
+  {submitting ? "Submitting..." : "Submit property"}
+</button>
           </div>
         </form>
       </section>
