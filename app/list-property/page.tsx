@@ -2,13 +2,14 @@
 import { supabase } from "../lib/supabase";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import Image from "next/image";
+
 
 export default function ListPropertyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 const [errorMessage, setErrorMessage] = useState("");
-
- async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+async function handleSubmit(event: FormEvent<HTMLFormElement>) {
   event.preventDefault();
 
   setSubmitting(true);
@@ -17,52 +18,96 @@ const [errorMessage, setErrorMessage] = useState("");
   const form = event.currentTarget;
   const formData = new FormData(form);
 
-  const propertyData = {
-    title: formData.get("title") as string,
-    transaction_type: formData.get("transactionType") as string,
-    property_type: formData.get("propertyType") as string,
-    price: Number(formData.get("price")),
+  try {
+    const imageFiles = formData
+      .getAll("images")
+      .filter((item): item is File => item instanceof File && item.size > 0);
 
-    city: formData.get("city") as string,
-    neighborhood: formData.get("neighborhood") as string,
-    sector: (formData.get("sector") as string) || null,
-    landmark: (formData.get("landmark") as string) || null,
+    const imageUrls: string[] = [];
 
-    bedrooms: Number(formData.get("bedrooms") || 0),
-    bathrooms: Number(formData.get("bathrooms") || 0),
-    area: Number(formData.get("area")),
+    for (const file of imageFiles) {
+      const fileExtension = file.name.split(".").pop();
 
-    description: formData.get("description") as string,
+      const fileName = `${crypto.randomUUID()}.${fileExtension}`;
 
-    has_water: formData.get("hasWater") === "on",
-    has_electricity: formData.get("hasElectricity") === "on",
-    has_solar: formData.get("hasSolar") === "on",
-    has_parking: formData.get("hasParking") === "on",
-    has_fence: formData.get("hasFence") === "on",
-    paved_road_access:
-      formData.get("pavedRoadAccess") === "on",
+      const filePath = `properties/${fileName}`;
 
-    phone_number: formData.get("phoneNumber") as string,
-    whatsapp_number:
-      (formData.get("whatsappNumber") as string) || null,
+      const { error: uploadError } = await supabase.storage
+        .from("property-images")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type,
+        });
 
-    status: "pending",
-  };
+      if (uploadError) {
+        throw uploadError;
+      }
 
-  const { error } = await supabase
-    .from("properties")
-    .insert(propertyData);
+      const { data: publicUrlData } = supabase.storage
+        .from("property-images")
+        .getPublicUrl(filePath);
 
-  if (error) {
+      imageUrls.push(publicUrlData.publicUrl);
+    }
+
+    const propertyData = {
+      title: formData.get("title") as string,
+      transaction_type: formData.get("transactionType") as string,
+      property_type: formData.get("propertyType") as string,
+      price: Number(formData.get("price")),
+
+      city: formData.get("city") as string,
+      neighborhood: formData.get("neighborhood") as string,
+      sector: (formData.get("sector") as string) || null,
+      landmark: (formData.get("landmark") as string) || null,
+
+      bedrooms: Number(formData.get("bedrooms") || 0),
+      bathrooms: Number(formData.get("bathrooms") || 0),
+      area: Number(formData.get("area")),
+
+      description: formData.get("description") as string,
+
+      has_water: formData.get("hasWater") === "on",
+      has_electricity: formData.get("hasElectricity") === "on",
+      has_solar: formData.get("hasSolar") === "on",
+      has_parking: formData.get("hasParking") === "on",
+      has_fence: formData.get("hasFence") === "on",
+      paved_road_access:
+        formData.get("pavedRoadAccess") === "on",
+
+      phone_number: formData.get("phoneNumber") as string,
+      whatsapp_number:
+        (formData.get("whatsappNumber") as string) || null,
+
+      image_urls: imageUrls,
+
+      status: "pending",
+    };
+
+    const { error: insertError } = await supabase
+      .from("properties")
+      .insert(propertyData);
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    form.reset();
+    setSubmitted(true);
+  } catch (error) {
     console.error(error);
-    setErrorMessage(error.message);
-    setSubmitting(false);
-    return;
-  }
 
-  setSubmitting(false);
-  setSubmitted(true);
-  form.reset();
+    if (error instanceof Error) {
+      setErrorMessage(error.message);
+    } else {
+      setErrorMessage(
+        "Something went wrong while submitting the property."
+      );
+    }
+  } finally {
+    setSubmitting(false);
+  }
 }
 
   if (submitted) {
@@ -82,8 +127,9 @@ const [errorMessage, setErrorMessage] = useState("");
           </p>
 
           <p className="mt-2 text-sm text-gray-500">
-            This is currently a test form. We will connect it to a database
-            later.
+           <p className="mt-2 text-sm text-gray-500">
+  Your listing has been saved and is awaiting review before publication.
+</p>
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

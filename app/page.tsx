@@ -1,8 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
-import { properties } from "./data/properties";
+import {supabase} from "./lib/supabase";
 
-export default function Home() {
+type SupabaseProperty = {
+  id: number;
+  title: string;
+  price: number;
+  city: string;
+  neighborhood: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  image_urls: string[];
+  status: string;
+};
+
+
+export default async function Home() {
+  const { data: supabaseProperties, error } = await supabase
+  .from("properties")
+  .select("*")
+  .eq("status", "approved")
+  .order("created_at", { ascending: false });
+
+if (error) {
+  console.error("Error loading properties:", error);
+}
   return (
     <main className="min-h-screen bg-gray-50">
       <header className="border-b bg-white">
@@ -89,18 +112,19 @@ export default function Home() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {properties.map((property) => (
+         {supabaseProperties?.map((property: SupabaseProperty) => (
             <article
               key={property.id}
               className="overflow-hidden rounded-2xl border bg-white shadow-sm"
             >
              <div className="relative h-56 w-full">
   <Image
-    src={property.image}
-    alt={property.title}
-    fill
-    className="object-cover"
-  />
+  src={property.image_urls?.[0] || "/images/villa-ouaga-1.jpg"}
+  alt={property.title}
+  fill
+  sizes="(max-width: 768px) 100vw, 33vw"
+  className="object-cover"
+/>
   
 
   <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-gray-900 shadow">
@@ -119,24 +143,24 @@ export default function Home() {
               <div className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-xl font-bold text-gray-900">
-                    {property.price}
+                    {Number(property.price).toLocaleString()} FCFA
                   </h3>
 
                   <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
-                    {property.trustScore}% trusted
+                   Pending verification
                   </span>
                 </div>
 
                 <p className="mt-3 font-semibold text-gray-800">
-                  {property.title}
+                 {property.bedrooms} bedrooms • {property.bathrooms} bathrooms • {property.area} m²
                 </p>
 
                 <p className="mt-1 text-sm text-gray-600">
-                  {property.details}
+                 {property.bedrooms} bedrooms • {property.bathrooms} bathrooms • {property.area} m²
                 </p>
 
                 <p className="mt-2 text-sm text-gray-500">
-                  {property.location}
+                  {property.neighborhood}, {property.city}
                 </p>
 
          <Link
