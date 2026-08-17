@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { properties } from "../../data/properties";
+import { supabase } from "../../lib/supabase";
+import Header from "../../components/Header";
 
 type PropertyPageProps = {
   params: Promise<{
@@ -9,45 +10,75 @@ type PropertyPageProps = {
   }>;
 };
 
+type Property = {
+  id: number;
+  title: string;
+  transaction_type: string;
+  property_type: string;
+  price: number;
+
+  city: string;
+  neighborhood: string;
+  sector: string | null;
+  landmark: string | null;
+
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  description: string;
+
+  has_water: boolean;
+  has_electricity: boolean;
+  has_solar: boolean;
+  has_parking: boolean;
+  has_fence: boolean;
+  paved_road_access: boolean;
+
+  phone_number: string;
+  whatsapp_number: string | null;
+
+  image_urls: string[];
+  status: string;
+};
+
 export default async function PropertyPage({
   params,
 }: PropertyPageProps) {
   const { id } = await params;
 
-  const property = properties.find(
-    (item) => item.id === Number(id)
-  );
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "approved")
+    .maybeSingle();
 
-  if (!property) {
+  if (error) {
+    console.error("Property loading error:", error);
+  }
+
+  if (!data) {
     notFound();
   }
+
+  const property = data as Property;
+
+  const whatsappNumber =
+    property.whatsapp_number || property.phone_number;
+
+  const cleanedWhatsAppNumber =
+    whatsappNumber.replace(/[^\d]/g, "");
 
   const whatsappMessage = encodeURIComponent(
     `Hello, I am interested in ${property.title} listed on FasoHome.`
   );
 
   const whatsappLink =
-    `https://wa.me/${property.whatsappNumber}?text=${whatsappMessage}`;
+    `https://wa.me/${cleanedWhatsAppNumber}?text=${whatsappMessage}`;
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-green-700"
-          >
-            FasoHome
-          </Link>
-
-          <Link
-            href="/#properties"
-            className="font-semibold text-gray-700 hover:text-green-700"
-          >
-            Back to properties
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <Link
@@ -57,138 +88,210 @@ export default async function PropertyPage({
           ← Back to properties
         </Link>
 
-        <div className="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm">
-          <div className="relative h-[320px] w-full md:h-[520px]">
-            <Image
-              src={property.image}
-              alt={property.title}
-              fill
-              priority
-              className="object-cover"
-            />
-          </div>
+        <div className="mt-6">
+          <p className="text-sm font-semibold uppercase tracking-widest text-green-700">
+            {property.property_type}
+          </p>
 
-          <div className="grid gap-10 p-6 md:p-10 lg:grid-cols-[1fr_360px]">
-            <div>
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-widest text-green-700">
-                    {property.propertyType}
-                  </p>
+          <h1 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">
+            {property.title}
+          </h1>
 
-                  <h1 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">
-                    {property.title}
-                  </h1>
+          <p className="mt-3 text-lg text-gray-600">
+            {property.neighborhood}, {property.city}
+            {property.sector ? ` • ${property.sector}` : ""}
+          </p>
+        </div>
 
-                  <p className="mt-3 text-lg text-gray-600">
-                    {property.location}
-                  </p>
-                </div>
-
-                <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-bold text-green-800">
-                  {property.trustScore}% trusted
-                </span>
-              </div>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <DetailBox
-                  label="Price"
-                  value={property.price}
-                />
-
-                <DetailBox
-                  label="Bedrooms"
-                  value={String(property.bedrooms)}
-                />
-
-                <DetailBox
-                  label="Bathrooms"
-                  value={String(property.bathrooms)}
-                />
-
-                <DetailBox
-                  label="Area"
-                  value={`${property.area} m²`}
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {property.image_urls?.length > 0 ? (
+            property.image_urls.map((imageUrl, index) => (
+              <div
+                key={imageUrl}
+                className={
+                  index === 0
+                    ? "relative h-[420px] overflow-hidden rounded-2xl md:col-span-2"
+                    : "relative h-72 overflow-hidden rounded-2xl"
+                }
+              >
+                <Image
+                  src={imageUrl}
+                  alt={`${property.title} photo ${index + 1}`}
+                  fill
+                  sizes={
+                    index === 0
+                      ? "100vw"
+                      : "(max-width: 768px) 100vw, 50vw"
+                  }
+                  className="object-cover"
+                  priority={index === 0}
                 />
               </div>
+            ))
+          ) : (
+            <div className="relative h-[420px] overflow-hidden rounded-2xl md:col-span-2">
+              <Image
+                src="/images/villa-ouaga-1.jpg"
+                alt={property.title}
+                fill
+                sizes="100vw"
+                className="object-cover"
+              />
+            </div>
+          )}
+        </div>
 
-              <div className="mt-10">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  About this property
-                </h2>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
+          <div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <DetailBox
+                label="Price"
+                value={`${Number(property.price).toLocaleString()} FCFA`}
+              />
 
-                <p className="mt-4 max-w-3xl leading-8 text-gray-600">
-                  {property.description}
-                </p>
-              </div>
+              <DetailBox
+                label="Bedrooms"
+                value={String(property.bedrooms)}
+              />
 
-              <div className="mt-10">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Property features
-                </h2>
+              <DetailBox
+                label="Bathrooms"
+                value={String(property.bathrooms)}
+              />
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <Feature
-                    label="Running water"
-                    available={property.hasWater}
-                  />
-
-                  <Feature
-                    label="Electricity"
-                    available={property.hasElectricity}
-                  />
-
-                  <Feature
-                    label="Parking"
-                    available={property.hasParking}
-                  />
-
-                  <Feature
-                    label="Paved-road access"
-                    available={property.pavedRoadAccess}
-                  />
-                </div>
-              </div>
+              <DetailBox
+                label="Area"
+                value={`${property.area} m²`}
+              />
             </div>
 
-            <aside className="h-fit rounded-2xl border border-gray-200 p-6">
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-gray-900">
+                About this property
+              </h2>
+
+              <p className="mt-4 max-w-3xl leading-8 text-gray-600">
+                {property.description}
+              </p>
+            </section>
+
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Location
+              </h2>
+
+              <div className="mt-4 rounded-2xl border bg-white p-6">
+                <p className="font-semibold text-gray-900">
+                  {property.neighborhood}, {property.city}
+                </p>
+
+                {property.sector && (
+                  <p className="mt-2 text-gray-600">
+                    Sector: {property.sector}
+                  </p>
+                )}
+
+                {property.landmark && (
+                  <p className="mt-2 text-gray-600">
+                    Nearby landmark: {property.landmark}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="mt-10">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Amenities
+              </h2>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <Feature
+                  label="Running water"
+                  available={property.has_water}
+                />
+
+                <Feature
+                  label="Electricity"
+                  available={property.has_electricity}
+                />
+
+                <Feature
+                  label="Solar installation"
+                  available={property.has_solar}
+                />
+
+                <Feature
+                  label="Parking"
+                  available={property.has_parking}
+                />
+
+                <Feature
+                  label="Walled or fenced"
+                  available={property.has_fence}
+                />
+
+                <Feature
+                  label="Paved-road access"
+                  available={property.paved_road_access}
+                />
+              </div>
+            </section>
+          </div>
+
+          <aside className="h-fit rounded-2xl border bg-white p-6 shadow-sm lg:sticky lg:top-6">
+            <p className="text-sm font-semibold text-gray-500">
+              Listed price
+            </p>
+
+            <p className="mt-2 text-3xl font-bold text-gray-900">
+              {Number(property.price).toLocaleString()} FCFA
+            </p>
+
+            <p className="mt-2 text-sm capitalize text-gray-500">
+              For {property.transaction_type}
+            </p>
+
+            <div className="mt-6 border-t pt-6">
               <p className="text-sm font-semibold text-gray-500">
-                Listed price
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {property.price}
-              </p>
-
-              <p className="mt-5 text-sm leading-6 text-gray-600">
-                Contact the advertiser or request a property visit before
-                making any payment.
+                Contact number
               </p>
 
               <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-6 block rounded-lg bg-green-700 px-5 py-4 text-center font-bold text-white hover:bg-green-800"
+                href={`tel:${property.phone_number}`}
+                className="mt-1 block text-lg font-bold text-gray-900 hover:text-green-700"
               >
-                Contact on WhatsApp
+                {property.phone_number}
               </a>
+            </div>
 
-              <button
-                type="button"
-                className="mt-3 w-full rounded-lg bg-yellow-500 px-5 py-4 font-bold text-gray-950 hover:bg-yellow-400"
-              >
-                Request a visit
-              </button>
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 block rounded-lg bg-green-700 px-5 py-4 text-center font-bold text-white hover:bg-green-800"
+            >
+              Contact on WhatsApp
+            </a>
 
-              <button
-                type="button"
-                className="mt-3 w-full rounded-lg border border-gray-300 px-5 py-4 font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                Report this listing
-              </button>
-            </aside>
-          </div>
+            <button
+              type="button"
+              className="mt-3 w-full rounded-lg bg-yellow-500 px-5 py-4 font-bold text-gray-950 hover:bg-yellow-400"
+            >
+              Request a visit
+            </button>
+
+            <button
+              type="button"
+              className="mt-3 w-full rounded-lg border border-gray-300 px-5 py-4 font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Report this listing
+            </button>
+
+            <p className="mt-5 text-xs leading-5 text-gray-500">
+              Never send money before confirming the property,
+              advertiser, and relevant documents.
+            </p>
+          </aside>
         </div>
       </section>
     </main>
@@ -205,9 +308,14 @@ function DetailBox({
   value,
 }: DetailBoxProps) {
   return (
-    <div className="rounded-xl bg-gray-100 p-4">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-1 font-bold text-gray-900">{value}</p>
+    <div className="rounded-xl bg-white p-4 shadow-sm">
+      <p className="text-sm text-gray-500">
+        {label}
+      </p>
+
+      <p className="mt-1 font-bold text-gray-900">
+        {value}
+      </p>
     </div>
   );
 }
@@ -222,12 +330,12 @@ function Feature({
   available,
 }: FeatureProps) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-gray-200 p-4">
+    <div className="flex items-center gap-3 rounded-xl border bg-white p-4">
       <span
         className={
           available
-            ? "text-lg text-green-700"
-            : "text-lg text-gray-400"
+            ? "text-xl font-bold text-green-700"
+            : "text-xl text-gray-400"
         }
       >
         {available ? "✓" : "—"}

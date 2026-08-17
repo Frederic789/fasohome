@@ -3,6 +3,9 @@ import { supabase } from "../lib/supabase";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import Image from "next/image";
+import Header from "../components/Header";
+
+
 
 
 export default function ListPropertyPage() {
@@ -155,20 +158,7 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 
   return (
     <main className="min-h-screen bg-gray-100">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-2xl font-bold text-green-700">
-            FasoHome
-          </Link>
-
-          <Link
-            href="/"
-            className="font-semibold text-gray-700 hover:text-green-700"
-          >
-            Back to home
-          </Link>
-        </div>
-      </header>
+     <Header />
 
       <section className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-8">

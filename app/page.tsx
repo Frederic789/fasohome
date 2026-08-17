@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {supabase} from "./lib/supabase";
+import Header from "./components/Header";
 
 type SupabaseProperty = {
   id: number;
@@ -11,7 +12,7 @@ type SupabaseProperty = {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  image_urls: string[];
+  image_urls: string[] | null;
   status: string;
 };
 
@@ -28,36 +29,7 @@ if (error) {
 }
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-    <a href="/" className="text-2xl font-bold text-green-700">
-      FasoHome
-    </a>
-
-    <nav className="hidden items-center gap-7 text-sm font-semibold text-gray-700 lg:flex">
-      <a href="#properties" className="hover:text-green-700">
-        Buy
-      </a>
-
-      <a href="#properties" className="hover:text-green-700">
-        Rent
-      </a>
-
-      <a href="#properties" className="hover:text-green-700">
-        Land
-      </a>
-
-     
-    </nav>
-
-   <Link
-  href="/list-property"
-  className="rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800"
->
-  List a property
-</Link>
-  </div>
-</header>
+     <Header/>
 
       <section className="bg-green-900 px-6 py-24 text-white">
         <div className="mx-auto max-w-5xl text-center">
@@ -111,92 +83,93 @@ if (error) {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-         {supabaseProperties?.map((property: SupabaseProperty) => (
-            <article
-              key={property.id}
-              className="overflow-hidden rounded-2xl border bg-white shadow-sm"
-            >
-             <div className="relative h-56 w-full">
-  <Image
-  src={property.image_urls?.[0] || "/images/villa-ouaga-1.jpg"}
-  alt={property.title}
-  fill
-  sizes="(max-width: 768px) 100vw, 33vw"
-  className="object-cover"
-/>
-  
+       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+  {supabaseProperties?.map((property: SupabaseProperty) => (
+    <Link
+      key={property.id}
+      href={`/properties/${property.id}`}
+      className="block"
+    >
+      <article className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+        <div className="relative h-56 w-full">
+          <Image
+            src={
+              property.image_urls?.[0] ||
+              "/images/villa-ouaga-1.jpg"
+            }
+            alt={property.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover"
+          />
 
-  <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-gray-900 shadow">
-    Featured
-  </span>
+          <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-sm font-semibold text-gray-900 shadow">
+            Featured
+          </span>
 
-  <button
-    type="button"
-    aria-label="Save property"
-    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow"
-  >
-    ♡
-  </button>
-</div>
+          <span className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow">
+            ♡
+          </span>
+        </div>
 
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {Number(property.price).toLocaleString()} FCFA
-                  </h3>
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-xl font-bold text-gray-900">
+              {Number(property.price).toLocaleString()} FCFA
+            </h3>
 
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
-                   Pending verification
-                  </span>
-                </div>
+            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
+              Approved 
+            </span>
+          </div>
 
-                <p className="mt-3 font-semibold text-gray-800">
-                 {property.bedrooms} bedrooms • {property.bathrooms} bathrooms • {property.area} m²
-                </p>
+          <p className="mt-3 font-semibold text-gray-800">
+            {property.title}
+          </p>
 
-                <p className="mt-1 text-sm text-gray-600">
-                 {property.bedrooms} bedrooms • {property.bathrooms} bathrooms • {property.area} m²
-                </p>
+          <p className="mt-1 text-sm text-gray-600">
+            {property.bedrooms} bedrooms •{" "}
+            {property.bathrooms} bathrooms •{" "}
+            {property.area} m²
+          </p>
 
-                <p className="mt-2 text-sm text-gray-500">
-                  {property.neighborhood}, {property.city}
-                </p>
+          <p className="mt-2 text-sm text-gray-500">
+            {property.neighborhood}, {property.city}
+          </p>
 
-         <Link
-  href={`/properties/${property.id}`}
-  className="mt-5 block w-full rounded-lg border border-green-700 px-4 py-3 text-center font-semibold text-green-700 transition hover:bg-green-700 hover:text-white"
->
-  View property
-</Link>
-              </div>
-            </article>
-          ))}
+          <div className="mt-5 w-full rounded-lg border border-green-700 px-4 py-3 text-center font-semibold text-green-700 transition hover:bg-green-700 hover:text-white">
+            View property
+          </div>
+        </div>
+      </article>
+    </Link>
+  ))}
+  </div>
+        </section>
+
+      <section
+        id="diaspora"
+        className="bg-green-900 px-6 py-16 text-white"
+      >
+        <div className="mx-auto max-w-7xl">
+          <p className="font-semibold uppercase tracking-widest text-yellow-400">
+            FasoHome Diaspora
+          </p>
+
+          <h2 className="mt-3 text-3xl font-bold md:text-4xl">
+            Searching from outside Burkina Faso?
+          </h2>
+
+          <p className="mt-5 max-w-2xl leading-7 text-green-100">
+            Request a property inspection, GPS verification, recorded video
+            tour, or live video visit before making a decision.
+          </p>
+
+          <button className="mt-7 rounded-lg bg-yellow-500 px-6 py-3 font-bold text-gray-950 hover:bg-yellow-400">
+            Request an inspection
+          </button>
         </div>
       </section>
-      <section
-  id="diaspora"
-  className="bg-green-900 px-6 py-16 text-white"
->
-  <div className="mx-auto max-w-7xl">
-    <p className="font-semibold uppercase tracking-widest text-yellow-400">
-      FasoHome Diaspora
-    </p>
-
-    <h2 className="mt-3 text-3xl font-bold md:text-4xl">
-      Searching from outside Burkina Faso?
-    </h2>
-
-    <p className="mt-5 max-w-2xl leading-7 text-green-100">
-      Request a property inspection, GPS verification, recorded video tour,
-      or live video visit before making a decision.
-    </p>
-
-    <button className="mt-7 rounded-lg bg-yellow-500 px-6 py-3 font-bold text-gray-950 hover:bg-yellow-400">
-      Request an inspection
-    </button>
-  </div>
-</section>
     </main>
   );
 }
