@@ -12,6 +12,7 @@ export default function ListPropertyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 const [errorMessage, setErrorMessage] = useState("");
+
 async function handleSubmit(event: FormEvent<HTMLFormElement>) {
   event.preventDefault();
 
@@ -21,18 +22,32 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
   const form = event.currentTarget;
   const formData = new FormData(form);
 
+  // 1. Get the logged-in user FIRST
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    setErrorMessage("You must be signed in to list a property.");
+    setSubmitting(false);
+    return;
+  }
+
   try {
+    // 2. Upload property images
     const imageFiles = formData
       .getAll("images")
-      .filter((item): item is File => item instanceof File && item.size > 0);
+      .filter(
+        (item): item is File =>
+          item instanceof File && item.size > 0
+      );
 
     const imageUrls: string[] = [];
 
     for (const file of imageFiles) {
       const fileExtension = file.name.split(".").pop();
-
       const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-
       const filePath = `properties/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -54,37 +69,56 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
       imageUrls.push(publicUrlData.publicUrl);
     }
 
+    // 3. Now user.id is available here
     const propertyData = {
+      owner_id: user.id,
+
       title: formData.get("title") as string,
-      transaction_type: formData.get("transactionType") as string,
-      property_type: formData.get("propertyType") as string,
+      transaction_type:
+        formData.get("transactionType") as string,
+      property_type:
+        formData.get("propertyType") as string,
       price: Number(formData.get("price")),
 
       city: formData.get("city") as string,
-      neighborhood: formData.get("neighborhood") as string,
-      sector: (formData.get("sector") as string) || null,
-      landmark: (formData.get("landmark") as string) || null,
+      neighborhood:
+        formData.get("neighborhood") as string,
+      sector:
+        (formData.get("sector") as string) || null,
+      landmark:
+        (formData.get("landmark") as string) || null,
 
-      bedrooms: Number(formData.get("bedrooms") || 0),
-      bathrooms: Number(formData.get("bathrooms") || 0),
+      bedrooms: Number(
+        formData.get("bedrooms") || 0
+      ),
+      bathrooms: Number(
+        formData.get("bathrooms") || 0
+      ),
       area: Number(formData.get("area")),
 
-      description: formData.get("description") as string,
+      description:
+        formData.get("description") as string,
 
-      has_water: formData.get("hasWater") === "on",
-      has_electricity: formData.get("hasElectricity") === "on",
-      has_solar: formData.get("hasSolar") === "on",
-      has_parking: formData.get("hasParking") === "on",
-      has_fence: formData.get("hasFence") === "on",
+      has_water:
+        formData.get("hasWater") === "on",
+      has_electricity:
+        formData.get("hasElectricity") === "on",
+      has_solar:
+        formData.get("hasSolar") === "on",
+      has_parking:
+        formData.get("hasParking") === "on",
+      has_fence:
+        formData.get("hasFence") === "on",
       paved_road_access:
         formData.get("pavedRoadAccess") === "on",
 
-      phone_number: formData.get("phoneNumber") as string,
+      phone_number:
+        formData.get("phoneNumber") as string,
       whatsapp_number:
-        (formData.get("whatsappNumber") as string) || null,
+        (formData.get("whatsappNumber") as string) ||
+        null,
 
       image_urls: imageUrls,
-
       status: "pending",
     };
 
@@ -154,6 +188,8 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         </div>
       </main>
     );
+
+    
   }
 
   return (

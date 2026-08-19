@@ -51,13 +51,16 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
         <Link href="/" className="flex items-center">
           <Image
-            src="/images/fasohome-logo.png"
-            alt="FasoHome"
-            width={220}
-            height={80}
-            priority
-            className="object-contain"
-          />
+  src="/images/fasohome-logo.png"
+  alt="FasoHome"
+  width={220}
+  height={80}
+  priority
+  style={{
+    width: "220px",
+    height: "auto",
+  }}
+/>
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm font-semibold text-gray-700 lg:flex">
