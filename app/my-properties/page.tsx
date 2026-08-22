@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import { supabase } from "../lib/supabase";
 
+
 type Property = {
   id: number;
   title: string;
@@ -61,14 +62,16 @@ export default function MyPropertiesPage() {
     loadProperties();
   }, [router]);
 
-  async function handleDelete(propertyId: number) {
+ async function handleDelete(property: Property) {
   const confirmed = window.confirm(
-    "Are you sure you want to delete this property? This action cannot be undone."
+    "Are you sure you want to delete this property? The property and its photos will be permanently deleted."
   );
 
   if (!confirmed) {
     return;
   }
+
+  setErrorMessage("");
 
   const {
     data: { user },
@@ -80,22 +83,64 @@ export default function MyPropertiesPage() {
     return;
   }
 
-  const { error } = await supabase
-    .from("properties")
-    .delete()
-    .eq("id", propertyId)
-    .eq("owner_id", user.id);
+  try {
+    // 1. Convert public image URLs back into Storage file paths
+    const imagePaths =
+      property.image_urls
+        ?.map((url) => {
+          const marker =
+            "/storage/v1/object/public/property-images/";
 
-  if (error) {
-    setErrorMessage(error.message);
-    return;
+          const markerIndex = url.indexOf(marker);
+
+          if (markerIndex === -1) {
+            return null;
+          }
+
+          return url.substring(markerIndex + marker.length);
+        })
+        .filter((path): path is string => path !== null) ?? [];
+
+    // 2. Delete images from Supabase Storage
+    if (imagePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("property-images")
+        .remove(imagePaths);
+
+      if (storageError) {
+        throw storageError;
+      }
+    }
+
+    // 3. Delete the property from the database
+    const { error: deleteError } = await supabase
+      .from("properties")
+      .delete()
+      .eq("id", property.id)
+      .eq("owner_id", user.id);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    // 4. Remove the card from the screen
+    setProperties((currentProperties) =>
+      currentProperties.filter(
+        (currentProperty) =>
+          currentProperty.id !== property.id
+      )
+    );
+  } catch (error) {
+    console.error("Delete property error:", error);
+
+    if (error instanceof Error) {
+      setErrorMessage(error.message);
+    } else {
+      setErrorMessage(
+        "Something went wrong while deleting the property."
+      );
+    }
   }
-
-  setProperties((currentProperties) =>
-    currentProperties.filter(
-      (property) => property.id !== propertyId
-    )
-  );
 }
 
   return (
@@ -206,7 +251,7 @@ export default function MyPropertiesPage() {
 
   <button
     type="button"
-    onClick={() => handleDelete(property.id)}
+   onClick={() => handleDelete(property)}
     className="rounded-lg border border-red-600 px-4 py-3 font-semibold text-red-600 hover:bg-red-50"
   >
     Delete

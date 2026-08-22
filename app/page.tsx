@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {supabase} from "./lib/supabase";
 import Header from "./components/Header";
+import FavoriteButton from "./components/FavoriteButton";
 
 type SupabaseProperty = {
   id: number;
@@ -107,9 +108,9 @@ if (error) {
             Featured
           </span>
 
-          <span className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow">
-            ♡
-          </span>
+<div className="absolute right-3 top-3">
+  <FavoriteButton propertyId={property.id} />
+</div>
         </div>
 
         <div className="p-5">
