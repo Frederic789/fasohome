@@ -47,29 +47,36 @@ if (error) {
             across Burkina Faso.
           </p>
 
-          <div className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-xl bg-white p-2 shadow-xl md:flex-row">
-            <select className="rounded-lg border px-4 py-4 text-gray-800">
-              <option>Buy</option>
-              <option>Rent</option>
-              <option>Land</option>
-            </select>
+         <form
+  action="/search"
+  method="GET"
+  className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-xl bg-white p-2 shadow-xl md:flex-row"
+>
+  <select
+    name="type"
+    className="rounded-lg border px-4 py-4 text-gray-800"
+  >
+    <option value="sale">Buy</option>
+    <option value="rent">Rent</option>
+    <option value="land">Land</option>
+  </select>
 
-            <input
-              type="search"
-              placeholder="City, neighborhood, sector or landmark"
-              className="flex-1 rounded-lg border px-4 py-4 text-gray-900 outline-none"
-            />
+  <input
+    type="search"
+    name="location"
+    placeholder="City, neighborhood, sector or landmark"
+    className="flex-1 rounded-lg border px-4 py-4 text-gray-900 outline-none"
+  />
 
-            <button
-              type="submit"
-              className="rounded-lg bg-yellow-500 px-8 py-4 font-bold text-gray-950"
-            >
-              Search
-            </button>
-          </div>
-        </div>
-      </section>
-
+  <button
+    type="submit"
+    className="rounded-lg bg-yellow-500 px-8 py-4 font-bold text-gray-950"
+  >
+    Search
+  </button>
+</form>
+</div>
+ </section>
       <section
   id="properties"
   className="mx-auto max-w-7xl scroll-mt-24 px-6 py-14"
