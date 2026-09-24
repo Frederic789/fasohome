@@ -2,13 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import Header from "../components/Header";
 import { supabase } from "../lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -37,9 +38,16 @@ export default function LoginPage() {
     }
 
     if (data.user) {
-      router.push("/");
-      router.refresh();
-    }
+  const redirect = searchParams.get("redirect");
+
+  const safeRedirect =
+    redirect && redirect.startsWith("/") && !redirect.startsWith("//")
+      ? redirect
+      : "/";
+
+  router.push(safeRedirect);
+  router.refresh();
+}
 
     setLoading(false);
   }
