@@ -19,7 +19,7 @@ type SupabaseProperty = {
 
 
 export default async function Home() {
-  const { data: supabaseProperties, error } = await supabase
+const { data: supabaseProperties, error } = await supabase
   .from("properties")
   .select("*")
   .eq("status", "approved")
@@ -47,34 +47,7 @@ if (error) {
             across Burkina Faso.
           </p>
 
-         <form
-  action="/search"
-  method="GET"
-  className="mx-auto mt-8 flex max-w-3xl flex-col gap-2 rounded-xl bg-white p-2 shadow-xl md:flex-row"
->
-  <select
-    name="type"
-    className="rounded-lg border px-4 py-4 text-gray-800"
-  >
-    <option value="sale">Buy</option>
-    <option value="rent">Rent</option>
-    <option value="land">Land</option>
-  </select>
-
-  <input
-    type="search"
-    name="location"
-    placeholder="City, neighborhood, sector or landmark"
-    className="flex-1 rounded-lg border px-4 py-4 text-gray-900 outline-none"
-  />
-
-  <button
-    type="submit"
-    className="rounded-lg bg-yellow-500 px-8 py-4 font-bold text-gray-950"
-  >
-    Search
-  </button>
-</form>
+     
 </div>
  </section>
       <section
@@ -92,6 +65,9 @@ if (error) {
         </div>
 
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+
+
   {supabaseProperties?.map((property: SupabaseProperty) => (
     <Link
       key={property.id}
@@ -108,6 +84,7 @@ if (error) {
             alt={property.title}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
+            loading="eager"
             className="object-cover"
           />
 

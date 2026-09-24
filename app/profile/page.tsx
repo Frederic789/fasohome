@@ -130,21 +130,30 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-  href="/profile/edit"
-  className="rounded-lg bg-green-700 px-6 py-3 font-semibold text-white hover:bg-green-800"
->
-  Edit profile
-</Link>
+   <div className="mt-10 flex flex-wrap gap-4">
+  <Link
+    href="/profile/edit"
+    className="rounded-lg bg-green-700 px-6 py-3 font-semibold text-white hover:bg-green-800"
+  >
+    Edit profile
+  </Link>
 
-<Link
-  href="/my-properties"
-  className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
->
-  My properties
-</Link>
-          </div>
+  {profile?.account_type === "agency" ? (
+    <Link
+      href="/agency/dashboard"
+      className="rounded-lg border border-green-700 px-6 py-3 font-semibold text-green-700 hover:bg-green-50"
+    >
+      Agency dashboard
+    </Link>
+  ) : (
+    <Link
+      href="/my-properties"
+      className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+    >
+      My properties
+    </Link>
+  )}
+</div>
         </div>
       </section>
     </main>

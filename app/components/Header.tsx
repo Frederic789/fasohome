@@ -12,6 +12,7 @@ export default function Header() {
   const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
+  const [accountType, setAccountType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +22,30 @@ export default function Header() {
       } = await supabase.auth.getUser();
 
       setUser(user);
+
+      if (user) {
+        await loadAccountType(user.id);
+      } else {
+        setAccountType(null);
+      }
+
       setLoading(false);
+    }
+
+    async function loadAccountType(userId: string) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error loading account type:", error);
+        setAccountType(null);
+        return;
+      }
+
+      setAccountType(data?.account_type ?? null);
     }
 
     loadUser();
@@ -29,7 +53,15 @@ export default function Header() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+
+      setUser(currentUser);
+
+      if (currentUser) {
+        loadAccountType(currentUser.id);
+      } else {
+        setAccountType(null);
+      }
     });
 
     return () => {
@@ -41,6 +73,7 @@ export default function Header() {
     await supabase.auth.signOut();
 
     setUser(null);
+    setAccountType(null);
 
     router.push("/");
     router.refresh();
@@ -49,41 +82,55 @@ export default function Header() {
   return (
     <header className="border-b bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+        {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
-  src="/images/fasohome-logo.png"
-  alt="FasoHome"
-  width={220}
-  height={80}
-  priority
-  style={{
-    width: "220px",
-    height: "auto",
-  }}
-/>
+            src="/images/fasohome-logo.png"
+            alt="FasoHome"
+            width={220}
+            height={80}
+            priority
+            style={{
+              width: "220px",
+              height: "auto",
+            }}
+          />
         </Link>
 
-        <nav className="hidden items-center gap-7 text-sm font-semibold text-gray-700 lg:flex">
-          <Link href="/#properties" className="hover:text-green-700">
+        {/* Main navigation */}
+        <nav className="flex items-center gap-8">
+          <Link
+            href="/search?type=buy"
+            className="font-semibold text-gray-900 hover:text-green-700"
+          >
             Buy
           </Link>
 
-          <Link href="/#properties" className="hover:text-green-700">
+          <Link
+            href="/search?type=rent"
+            className="font-semibold text-gray-900 hover:text-green-700"
+          >
             Rent
           </Link>
 
-          <Link href="/#properties" className="hover:text-green-700">
+          <Link
+            href="/search?propertyType=land"
+            className="font-semibold text-gray-900 hover:text-green-700"
+          >
             Land
           </Link>
         </nav>
 
+        {/* Account navigation */}
         <div className="flex items-center gap-5">
-          <Link
-            href="/list-property"
-            className="rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800"
-          >
-            List a property
-          </Link>
+        {!loading && (
+  <Link
+    href={user ? "/list-property" : "/login?redirect=/list-property"}
+    className="rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800"
+  >
+    List a property
+  </Link>
+)}
 
           {!loading && !user && (
             <>
@@ -105,6 +152,15 @@ export default function Header() {
 
           {!loading && user && (
             <>
+              {accountType === "agency" && (
+                <Link
+                  href="/agency/dashboard"
+                  className="font-semibold text-green-700 hover:text-green-800"
+                >
+                  Dashboard
+                </Link>
+              )}
+
               <Link
                 href="/profile"
                 className="font-semibold text-gray-700 hover:text-green-700"

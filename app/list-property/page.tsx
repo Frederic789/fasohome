@@ -163,11 +163,9 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
             Thank you. Your property information has been received for review.
           </p>
 
-          <p className="mt-2 text-sm text-gray-500">
-           <p className="mt-2 text-sm text-gray-500">
+         <p className="mt-2 text-sm text-gray-500">
   Your listing has been saved and is awaiting review before publication.
 </p>
-          </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button

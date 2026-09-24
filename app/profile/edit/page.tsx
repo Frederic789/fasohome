@@ -14,6 +14,14 @@ type Profile = {
   phone_number: string | null;
   whatsapp_number: string | null;
   account_type: string;
+
+  agency_name: string | null;
+  agency_phone: string | null;
+  agency_whatsapp: string | null;
+  agency_address: string | null;
+  agency_description: string | null;
+  agency_logo_url: string | null;
+  is_verified: boolean;
 };
 
 export default function EditProfilePage() {
@@ -21,6 +29,8 @@ export default function EditProfilePage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+
+  const [accountType, setAccountType] = useState("buyer");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,6 +68,11 @@ export default function EditProfilePage() {
       }
 
       setProfile(data);
+
+      if (data?.account_type) {
+        setAccountType(data.account_type);
+      }
+
       setLoading(false);
     }
 
@@ -81,16 +96,46 @@ export default function EditProfilePage() {
     const fullName = formData.get("fullName") as string;
     const phoneNumber = formData.get("phoneNumber") as string;
     const whatsappNumber = formData.get("whatsappNumber") as string;
-    const accountType = formData.get("accountType") as string;
+    const selectedAccountType = formData.get("accountType") as string;
+
+    const updateData: {
+      full_name: string;
+      phone_number: string;
+      whatsapp_number: string | null;
+      account_type: string;
+
+      agency_name?: string | null;
+      agency_phone?: string | null;
+      agency_whatsapp?: string | null;
+      agency_address?: string | null;
+      agency_description?: string | null;
+    } = {
+      full_name: fullName,
+      phone_number: phoneNumber,
+      whatsapp_number: whatsappNumber || null,
+      account_type: selectedAccountType,
+    };
+
+    if (selectedAccountType === "agency") {
+      updateData.agency_name =
+        (formData.get("agencyName") as string) || null;
+
+      updateData.agency_phone =
+        (formData.get("agencyPhone") as string) || null;
+
+      updateData.agency_whatsapp =
+        (formData.get("agencyWhatsapp") as string) || null;
+
+      updateData.agency_address =
+        (formData.get("agencyAddress") as string) || null;
+
+      updateData.agency_description =
+        (formData.get("agencyDescription") as string) || null;
+    }
 
     const { error } = await supabase
       .from("profiles")
-      .update({
-        full_name: fullName,
-        phone_number: phoneNumber,
-        whatsapp_number: whatsappNumber || null,
-        account_type: accountType,
-      })
+      .update(updateData)
       .eq("id", user.id);
 
     if (error) {
@@ -158,7 +203,7 @@ export default function EditProfilePage() {
                 name="fullName"
                 required
                 defaultValue={profile?.full_name ?? ""}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-700"
+                className={inputStyles}
               />
             </label>
 
@@ -173,10 +218,6 @@ export default function EditProfilePage() {
                 disabled
                 className="mt-2 w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500"
               />
-
-              <p className="mt-2 text-xs text-gray-500">
-                Email editing will be added separately.
-              </p>
             </label>
 
             <label className="block">
@@ -189,7 +230,7 @@ export default function EditProfilePage() {
                 name="phoneNumber"
                 required
                 defaultValue={profile?.phone_number ?? ""}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-700"
+                className={inputStyles}
               />
             </label>
 
@@ -202,7 +243,7 @@ export default function EditProfilePage() {
                 type="tel"
                 name="whatsappNumber"
                 defaultValue={profile?.whatsapp_number ?? ""}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-700"
+                className={inputStyles}
               />
             </label>
 
@@ -214,8 +255,11 @@ export default function EditProfilePage() {
               <select
                 name="accountType"
                 required
-                defaultValue={profile?.account_type ?? "buyer"}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-700"
+                value={accountType}
+                onChange={(event) =>
+                  setAccountType(event.target.value)
+                }
+                className={inputStyles}
               >
                 <option value="buyer">
                   Buyer
@@ -225,11 +269,110 @@ export default function EditProfilePage() {
                   Property owner
                 </option>
 
-                <option value="agent">
-                  Real estate agent
+                <option value="agency">
+                  Real estate agency
                 </option>
               </select>
             </label>
+
+            {accountType === "agency" && (
+              <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 p-6">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Agency information
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-600">
+                    Information about your real estate agency.
+                  </p>
+                </div>
+
+                <div className="space-y-5">
+                  <label className="block">
+                    <span className="font-semibold text-gray-700">
+                      Agency name
+                    </span>
+
+                    <input
+                      type="text"
+                      name="agencyName"
+                      required
+                      defaultValue={profile?.agency_name ?? ""}
+                      placeholder="Example: FasoHome Realty"
+                      className={inputStyles}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="font-semibold text-gray-700">
+                      Agency phone
+                    </span>
+
+                    <input
+                      type="tel"
+                      name="agencyPhone"
+                      defaultValue={profile?.agency_phone ?? ""}
+                      placeholder="+226 70 00 00 00"
+                      className={inputStyles}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="font-semibold text-gray-700">
+                      Agency WhatsApp
+                    </span>
+
+                    <input
+                      type="tel"
+                      name="agencyWhatsapp"
+                      defaultValue={profile?.agency_whatsapp ?? ""}
+                      placeholder="+226 70 00 00 00"
+                      className={inputStyles}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="font-semibold text-gray-700">
+                      Agency address
+                    </span>
+
+                    <input
+                      type="text"
+                      name="agencyAddress"
+                      defaultValue={profile?.agency_address ?? ""}
+                      placeholder="Example: Ouagadougou, Burkina Faso"
+                      className={inputStyles}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="font-semibold text-gray-700">
+                      Agency description
+                    </span>
+
+                    <textarea
+                      name="agencyDescription"
+                      rows={5}
+                      defaultValue={profile?.agency_description ?? ""}
+                      placeholder="Tell customers about your agency..."
+                      className={inputStyles}
+                    />
+                  </label>
+
+                  <div className="rounded-lg bg-white p-4">
+                    <p className="text-sm font-semibold text-gray-700">
+                      Verification status
+                    </p>
+
+                    <p className="mt-1 text-sm text-gray-600">
+                      {profile?.is_verified
+                        ? "✓ Verified agency"
+                        : "Not verified yet"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {errorMessage && (
               <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
@@ -265,3 +408,6 @@ export default function EditProfilePage() {
     </main>
   );
 }
+
+const inputStyles =
+  "mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-100";

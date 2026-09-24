@@ -8,7 +8,12 @@ import { supabase } from "../lib/supabase";
 type SearchPageProps = {
   searchParams: Promise<{
     type?: string;
+    propertyType?: string;
     location?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    bedrooms?: string;
+    sort?: string;
   }>;
 };
 
@@ -30,33 +35,64 @@ export default async function SearchPage({
   searchParams,
 }: SearchPageProps) {
   const params = await searchParams;
-
   const type = params.type || "";
-  const location = params.location?.trim() || "";
+const propertyType = params.propertyType || "";
+const location = params.location?.trim() || "";
+
+const minPrice = Number(params.minPrice || 0);
+const maxPrice = Number(params.maxPrice || 0);
+const bedrooms = Number(params.bedrooms || 0);
+
+const sort = params.sort || "newest";
+  
+
+  
 
   let query = supabase
     .from("properties")
     .select("*")
     .eq("status", "approved")
-    .order("created_at", { ascending: false });
+   
 
-  if (type === "rent") {
-    query = query.eq("transaction_type", "rent");
-  }
+ if (type) {
+  query = query.eq("transaction_type", type);
+}
 
-  if (type === "sale") {
-    query = query.eq("transaction_type", "sale");
-  }
+if (propertyType) {
+  query = query.eq("property_type", propertyType);
+}
 
-  if (type === "land") {
-    query = query.eq("property_type", "land");
-  }
+if (location) {
+  query = query.or(
+    `city.ilike.%${location}%,neighborhood.ilike.%${location}%,sector.ilike.%${location}%,landmark.ilike.%${location}%`
+  );
+}
 
-  if (location) {
-    query = query.or(
-      `city.ilike.%${location}%,neighborhood.ilike.%${location}%,sector.ilike.%${location}%,landmark.ilike.%${location}%`
-    );
-  }
+if (minPrice > 0) {
+  query = query.gte("price", minPrice);
+}
+
+if (maxPrice > 0) {
+  query = query.lte("price", maxPrice);
+}
+
+if (bedrooms > 0) {
+  query = query.gte("bedrooms", bedrooms);
+}
+
+if (sort === "price-low") {
+  query = query.order("price", {
+    ascending: true,
+  });
+} else if (sort === "price-high") {
+  query = query.order("price", {
+    ascending: false,
+  });
+} else {
+  query = query.order("created_at", {
+    ascending: false,
+  });
+}
 
   const { data: properties, error } = await query;
 
@@ -80,6 +116,72 @@ export default async function SearchPage({
             {location && `Location: ${location}`}
           </p>
         </div>
+
+              
+
+      {/* NEW FILTER FORM GOES HERE */}
+
+      
+
+        <form
+  action="/search"
+  method="GET"
+  className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4"
+>
+  <input type="hidden" name="type" value={type} />
+  <input
+    type="hidden"
+    name="propertyType"
+    value={propertyType}
+  />
+  <input
+    type="hidden"
+    name="location"
+    value={location}
+  />
+  <input
+    type="hidden"
+    name="minPrice"
+    value={minPrice || ""}
+  />
+  <input
+    type="hidden"
+    name="maxPrice"
+    value={maxPrice || ""}
+  />
+  <input
+    type="hidden"
+    name="bedrooms"
+    value={bedrooms || ""}
+  />
+
+  <label className="block">
+    <span className="mb-2 block text-sm font-semibold text-gray-700">
+      Sort results
+    </span>
+
+    <select
+      name="sort"
+      defaultValue={sort}
+      className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900"
+    >
+      <option value="newest">Newest</option>
+      <option value="price-low">
+        Price: low to high
+      </option>
+      <option value="price-high">
+        Price: high to low
+      </option>
+    </select>
+  </label>
+
+  <button
+    type="submit"
+    className="rounded-lg bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800"
+  >
+    Apply
+  </button>
+</form>
 
         {!properties || properties.length === 0 ? (
           <div className="mt-10 rounded-2xl border bg-white p-10 text-center">
