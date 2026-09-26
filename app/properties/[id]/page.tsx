@@ -13,6 +13,7 @@ type PropertyPageProps = {
 type Property = {
   id: number;
   title: string;
+    owner_id: string | null;
   transaction_type: string;
   property_type: string;
   price: number;
@@ -41,6 +42,16 @@ type Property = {
   status: string;
 };
 
+type PublicAgency = {
+  id: string;
+  agency_name: string;
+  agency_address: string | null;
+  agency_logo_url: string | null;
+  agency_phone: string | null;
+  agency_whatsapp: string | null;
+  is_verified: boolean;
+};
+
 export default async function PropertyPage({
   params,
 }: PropertyPageProps) {
@@ -62,6 +73,32 @@ export default async function PropertyPage({
   }
 
   const property = data as Property;
+
+  let agency: PublicAgency | null = null;
+
+if (property.owner_id) {
+  const { data: agencyData, error: agencyError } = await supabase
+    .from("public_agencies")
+    .select(
+      `
+      id,
+      agency_name,
+      agency_address,
+      agency_logo_url,
+      agency_phone,
+      agency_whatsapp,
+      is_verified
+      `
+    )
+    .eq("id", property.owner_id)
+    .maybeSingle();
+
+  if (agencyError) {
+    console.error("Agency loading error:", agencyError);
+  }
+
+  agency = agencyData;
+}
 
   const whatsappNumber =
     property.whatsapp_number || property.phone_number;
@@ -110,7 +147,7 @@ export default async function PropertyPage({
                 key={imageUrl}
                 className={
                   index === 0
-                    ? "relative h-[420px] overflow-hidden rounded-2xl md:col-span-2"
+                    ? "relative h-105 overflow-hidden rounded-2xl md:col-span-2"
                     : "relative h-72 overflow-hidden rounded-2xl"
                 }
               >
@@ -129,7 +166,7 @@ export default async function PropertyPage({
               </div>
             ))
           ) : (
-            <div className="relative h-[420px] overflow-hidden rounded-2xl md:col-span-2">
+            <div className="relative h-105 overflow-hidden rounded-2xl md:col-span-2">
               <Image
                 src="/images/villa-ouaga-1.jpg"
                 alt={property.title}
@@ -286,6 +323,59 @@ export default async function PropertyPage({
             >
               Report this listing
             </button>
+
+            {agency && (
+  <div className="mt-6 border-t pt-6">
+    <p className="text-sm font-semibold text-gray-500">
+      Listed by
+    </p>
+
+    <div className="mt-4 flex items-center gap-4">
+      {agency.agency_logo_url ? (
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border bg-white">
+          <Image
+            src={agency.agency_logo_url}
+            alt={`${agency.agency_name} logo`}
+            fill
+            sizes="64px"
+            className="object-contain p-2"
+          />
+        </div>
+      ) : (
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-green-100 text-sm font-bold text-green-800">
+          Agency
+        </div>
+      )}
+
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-bold text-gray-900">
+            {agency.agency_name}
+          </p>
+
+          {agency.is_verified && (
+            <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-800">
+              ✓ Verified
+            </span>
+          )}
+        </div>
+
+        {agency.agency_address && (
+          <p className="mt-1 text-sm text-gray-500">
+            {agency.agency_address}
+          </p>
+        )}
+      </div>
+    </div>
+
+    <Link
+      href={`/agencies/${agency.id}`}
+      className="mt-4 block w-full rounded-lg border border-green-700 px-5 py-3 text-center font-bold text-green-700 hover:bg-green-50"
+    >
+      View Agency
+    </Link>
+  </div>
+)}
 
             <p className="mt-5 text-xs leading-5 text-gray-500">
               Never send money before confirming the property,
