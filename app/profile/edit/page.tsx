@@ -31,6 +31,8 @@ export default function EditProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const [accountType, setAccountType] = useState("buyer");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+const [logoPreview, setLogoPreview] = useState<string | null>(null); 
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -79,6 +81,34 @@ export default function EditProfilePage() {
     loadProfile();
   }, [router]);
 
+  function handleLogoChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const file = event.target.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    setErrorMessage("Please choose an image file.");
+    event.target.value = "";
+    return;
+  }
+
+  const maxSize = 2 * 1024 * 1024;
+
+  if (file.size > maxSize) {
+    setErrorMessage("Agency logo must be smaller than 2 MB.");
+    event.target.value = "";
+    return;
+  }
+
+  setErrorMessage("");
+  setLogoFile(file);
+
+  const previewUrl = URL.createObjectURL(file);
+  setLogoPreview(previewUrl);
+}
+
   async function handleUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -109,6 +139,7 @@ export default function EditProfilePage() {
       agency_whatsapp?: string | null;
       agency_address?: string | null;
       agency_description?: string | null;
+      agency_logo_url?: string | null;
     } = {
       full_name: fullName,
       phone_number: phoneNumber,
@@ -132,6 +163,32 @@ export default function EditProfilePage() {
       updateData.agency_description =
         (formData.get("agencyDescription") as string) || null;
     }
+
+    if (logoFile) {
+  const fileExtension =
+    logoFile.name.split(".").pop()?.toLowerCase() || "jpg";
+
+  const filePath = `${user.id}/logo-${Date.now()}.${fileExtension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("agency-logos")
+    .upload(filePath, logoFile, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    setErrorMessage(`Logo upload failed: ${uploadError.message}`);
+    setSaving(false);
+    return;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("agency-logos")
+    .getPublicUrl(filePath);
+
+  updateData.agency_logo_url = publicUrlData.publicUrl;
+}
 
     const { error } = await supabase
       .from("profiles")
@@ -288,6 +345,38 @@ export default function EditProfilePage() {
                 </div>
 
                 <div className="space-y-5">
+                  <div className="rounded-xl border border-green-200 bg-white p-5">
+  <p className="font-semibold text-gray-700">
+    Agency logo
+  </p>
+
+  <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+    {(logoPreview || profile?.agency_logo_url) ? (
+      <img
+        src={logoPreview || profile?.agency_logo_url || ""}
+        alt="Agency logo"
+        className="h-24 w-24 rounded-xl border border-gray-200 object-contain p-2"
+      />
+    ) : (
+      <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 text-center text-xs text-gray-500">
+        No logo
+      </div>
+    )}
+
+    <div className="flex-1">
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        onChange={handleLogoChange}
+        className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-green-700 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-green-800"
+      />
+
+      <p className="mt-2 text-xs text-gray-500">
+        PNG, JPG or WebP. Maximum size: 2 MB.
+      </p>
+    </div>
+  </div>
+</div>
                   <label className="block">
                     <span className="font-semibold text-gray-700">
                       Agency name

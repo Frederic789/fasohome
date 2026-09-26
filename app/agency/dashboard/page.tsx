@@ -166,25 +166,45 @@ export default function AgencyDashboardPage() {
           </p>
 
           <div className="mt-3 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold md:text-4xl">
-                  {profile?.agency_name || profile?.full_name || "Your Agency"}
-                </h1>
+            <div className="flex items-center gap-5">
+  {profile?.agency_logo_url ? (
+    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-white p-2 shadow-sm">
+      <Image
+        src={profile.agency_logo_url}
+        alt={`${profile.agency_name || "Agency"} logo`}
+        fill
+        sizes="96px"
+        className="object-contain p-2"
+      />
+    </div>
+  ) : (
+    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-center text-xs font-semibold text-green-100">
+      Agency
+      <br />
+      Logo
+    </div>
+  )}
 
-                {profile?.is_verified && (
-                  <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">
-                    ✓ Verified
-                  </span>
-                )}
-              </div>
+  <div>
+    <div className="flex flex-wrap items-center gap-3">
+      <h1 className="text-3xl font-bold md:text-4xl">
+        {profile?.agency_name || profile?.full_name || "Your Agency"}
+      </h1>
 
-              {profile?.agency_address && (
-                <p className="mt-3 text-green-100">
-                  {profile.agency_address}
-                </p>
-              )}
-            </div>
+      {profile?.is_verified && (
+        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">
+          ✓ Verified
+        </span>
+      )}
+    </div>
+
+    {profile?.agency_address && (
+      <p className="mt-3 text-green-100">
+        {profile.agency_address}
+      </p>
+    )}
+  </div>
+</div>
 
             <Link
               href="/list-property"
