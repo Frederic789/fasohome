@@ -210,6 +210,8 @@ const [logoPreview, setLogoPreview] = useState<string | null>(null);
     }, 1000);
   }
 
+  
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50">
@@ -223,6 +225,8 @@ const [logoPreview, setLogoPreview] = useState<string | null>(null);
       </main>
     );
   }
+
+ 
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -249,6 +253,7 @@ const [logoPreview, setLogoPreview] = useState<string | null>(null);
             </Link>
           </div>
 
+  
           <form onSubmit={handleUpdate} className="mt-8 space-y-5">
             <label className="block">
               <span className="font-semibold text-gray-700">
