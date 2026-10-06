@@ -1,0 +1,21 @@
+
+{
+  "Navigation": {
+    "buy": "Buy",
+    "rent": "Rent",
+    "land": "Land",
+    "agencies": "Agencies",
+    "listProperty": "List a property",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "Home": {
+    "title": "Find a place you can trust",
+    "subtitle": "Discover houses, apartments and land in Burkina Faso.",
+    "featured": "Featured properties",
+    "search": "Search"
+  }
+}

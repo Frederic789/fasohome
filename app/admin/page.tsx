@@ -27,6 +27,29 @@ type Agency = {
   is_verified: boolean;
 };
 
+type DiasporaRequest = {
+  id: number;
+  user_id: string | null;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  whatsapp: string | null;
+  country_of_residence: string;
+  service_type: string;
+  property_id: number | null;
+  property_location: string | null;
+  property_link: string | null;
+  message: string;
+  status:
+    | "new"
+    | "reviewing"
+    | "in_progress"
+    | "completed"
+    | "cancelled";
+  created_at: string;
+  updated_at: string;
+};
+
 export default function AdminPage() {
   const router = useRouter();
 
@@ -39,6 +62,11 @@ export default function AdminPage() {
   null
 );
 const [updatingPropertyId, setUpdatingPropertyId] = useState<number | null>(
+  null
+);
+
+const [diasporaRequests, setDiasporaRequests] = useState<DiasporaRequest[]>([]);
+const [updatingDiasporaId, setUpdatingDiasporaId] = useState<number | null>(
   null
 );
 
@@ -132,6 +160,27 @@ const [updatingPropertyId, setUpdatingPropertyId] = useState<number | null>(
         setAgencies(agenciesData ?? []);
       }
 
+      // 5. Load Diaspora service requests
+const {
+  data: diasporaData,
+  error: diasporaError,
+} = await supabase.rpc("admin_get_diaspora_requests");
+
+if (diasporaError) {
+  console.error("Diaspora requests error:", diasporaError);
+
+  setError((current) =>
+    current
+      ? `${current} Unable to load Diaspora requests.`
+      : "Unable to load Diaspora requests."
+  );
+} else {
+  setDiasporaRequests(
+    (diasporaData as DiasporaRequest[] | null) ?? []
+  );
+}
+
+
       setLoading(false);
     }
 
@@ -208,6 +257,47 @@ async function handlePropertyStatus(
   setUpdatingPropertyId(null);
 }
 
+async function handleDiasporaStatus(
+  requestId: number,
+  newStatus:
+    | "new"
+    | "reviewing"
+    | "in_progress"
+    | "completed"
+    | "cancelled"
+) {
+  setUpdatingDiasporaId(requestId);
+  setError("");
+
+  const { error: statusError } = await supabase.rpc(
+    "admin_set_diaspora_request_status",
+    {
+      target_request_id: requestId,
+      new_status: newStatus,
+    }
+  );
+
+  if (statusError) {
+    console.error("Diaspora status error:", statusError);
+    setError(statusError.message);
+    setUpdatingDiasporaId(null);
+    return;
+  }
+
+  setDiasporaRequests((currentRequests) =>
+    currentRequests.map((request) =>
+      request.id === requestId
+        ? {
+            ...request,
+            status: newStatus,
+            updated_at: new Date().toISOString(),
+          }
+        : request
+    )
+  );
+
+  setUpdatingDiasporaId(null);
+}
   if (loading) {
     return (
       <>
@@ -254,7 +344,7 @@ async function handlePropertyStatus(
           )}
 
           {/* Stats */}
-          <section className="grid gap-5 md:grid-cols-2">
+         <section className="grid gap-5 md:grid-cols-3">
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Pending properties
@@ -274,6 +364,19 @@ async function handlePropertyStatus(
                 {agencies.length}
               </p>
             </div>
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+  <p className="text-sm font-medium text-gray-500">
+    Diaspora requests
+  </p>
+
+  <p className="mt-2 text-4xl font-bold text-gray-900">
+    {diasporaRequests.length}
+  </p>
+
+  <p className="mt-2 text-sm text-gray-500">
+    {diasporaRequests.filter((request) => request.status === "new").length} new
+  </p>
+</div>
           </section>
 
           {/* Pending Properties */}
@@ -442,8 +545,206 @@ async function handlePropertyStatus(
               </div>
             )}
           </section>
+          {/* Diaspora Requests */}
+<section className="mt-12">
+  <div className="mb-5">
+    <h2 className="text-2xl font-bold text-gray-900">
+      Diaspora Requests
+    </h2>
+
+    <p className="mt-1 text-gray-600">
+      Review and manage service requests submitted through FasoHome Diaspora.
+    </p>
+  </div>
+
+  {diasporaRequests.length === 0 ? (
+    <div className="rounded-2xl border bg-white p-8 text-gray-600 shadow-sm">
+      No Diaspora requests have been submitted yet.
+    </div>
+  ) : (
+    <div className="grid gap-6">
+      {diasporaRequests.map((request) => (
+        <div
+          key={request.id}
+          className="rounded-2xl border bg-white p-6 shadow-sm"
+        >
+          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <h3 className="text-xl font-bold text-gray-900">
+                  {formatServiceType(request.service_type)}
+                </h3>
+
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${getDiasporaStatusStyle(
+                    request.status
+                  )}`}
+                >
+                  {formatDiasporaStatus(request.status)}
+                </span>
+              </div>
+
+              <p className="mt-2 text-sm text-gray-500">
+                Request #{request.id} •{" "}
+                {new Date(request.created_at).toLocaleString()}
+              </p>
+            </div>
+
+            <select
+              value={request.status}
+              disabled={updatingDiasporaId === request.id}
+              onChange={(event) =>
+                handleDiasporaStatus(
+                  request.id,
+                  event.target.value as DiasporaRequest["status"]
+                )
+              }
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="new">New</option>
+              <option value="reviewing">Reviewing</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="mt-6 grid gap-6 border-t border-gray-200 pt-6 md:grid-cols-2">
+            <div>
+              <h4 className="font-bold text-gray-900">
+                Customer
+              </h4>
+
+              <div className="mt-3 space-y-2 text-sm text-gray-700">
+                <p>
+                  <span className="font-semibold">Name:</span>{" "}
+                  {request.full_name}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Email:</span>{" "}
+                  <a
+                    href={`mailto:${request.email}`}
+                    className="text-green-700 hover:underline"
+                  >
+                    {request.email}
+                  </a>
+                </p>
+
+                <p>
+                  <span className="font-semibold">Phone:</span>{" "}
+                  {request.phone || "Not provided"}
+                </p>
+
+                <p>
+                  <span className="font-semibold">WhatsApp:</span>{" "}
+                  {request.whatsapp || "Not provided"}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Country:</span>{" "}
+                  {request.country_of_residence}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-900">
+                Property / Project
+              </h4>
+
+              <div className="mt-3 space-y-2 text-sm text-gray-700">
+                <p>
+                  <span className="font-semibold">Location:</span>{" "}
+                  {request.property_location || "Not provided"}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Property ID:</span>{" "}
+                  {request.property_id || "Not connected to a FasoHome property"}
+                </p>
+
+                {request.property_link ? (
+                  <p>
+                    <span className="font-semibold">Property link:</span>{" "}
+                    <a
+                      href={request.property_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-700 hover:underline"
+                    >
+                      Open property link
+                    </a>
+                  </p>
+                ) : (
+                  <p>
+                    <span className="font-semibold">Property link:</span>{" "}
+                    Not provided
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h4 className="font-bold text-gray-900">
+              Customer Message
+            </h4>
+
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-700">
+              {request.message}
+            </p>
+          </div>
+
+          {updatingDiasporaId === request.id && (
+            <p className="mt-4 text-sm font-semibold text-green-700">
+              Updating request...
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</section>
         </div>
       </main>
     </>
   );
+}
+
+function formatServiceType(serviceType: string) {
+  const services: Record<string, string> = {
+    property_inspection: "Property Inspection",
+    gps_verification: "GPS & Location Verification",
+    photo_video_report: "Photo & Video Report",
+    live_video_visit: "Live Video Visit",
+    document_assistance: "Document Verification Assistance",
+    project_monitoring: "Project Monitoring",
+  };
+
+  return services[serviceType] ?? serviceType;
+}
+
+function formatDiasporaStatus(status: DiasporaRequest["status"]) {
+  const statuses: Record<DiasporaRequest["status"], string> = {
+    new: "New",
+    reviewing: "Reviewing",
+    in_progress: "In Progress",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  };
+
+  return statuses[status];
+}
+
+function getDiasporaStatusStyle(status: DiasporaRequest["status"]) {
+  const styles: Record<DiasporaRequest["status"], string> = {
+    new: "bg-blue-100 text-blue-800",
+    reviewing: "bg-yellow-100 text-yellow-800",
+    in_progress: "bg-purple-100 text-purple-800",
+    completed: "bg-green-100 text-green-800",
+    cancelled: "bg-red-100 text-red-800",
+  };
+
+  return styles[status];
 }
