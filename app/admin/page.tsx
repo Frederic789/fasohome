@@ -50,6 +50,24 @@ type DiasporaRequest = {
   updated_at: string;
 };
 
+
+type PropertyInquiry = {
+  id: number;
+  property_id: number;
+  user_id: string | null;
+  full_name: string;
+  email: string;
+  phone: string;
+  whatsapp: string | null;
+  country_of_residence: string | null;
+  preferred_visit_date: string | null;
+  message: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+
 export default function AdminPage() {
   const router = useRouter();
 
@@ -66,6 +84,13 @@ const [updatingPropertyId, setUpdatingPropertyId] = useState<number | null>(
 );
 
 const [diasporaRequests, setDiasporaRequests] = useState<DiasporaRequest[]>([]);
+
+const [propertyInquiries, setPropertyInquiries] =
+  useState<PropertyInquiry[]>([]);
+
+  const [updatingInquiryId, setUpdatingInquiryId] =
+  useState<number | null>(null);
+
 const [updatingDiasporaId, setUpdatingDiasporaId] = useState<number | null>(
   null
 );
@@ -181,7 +206,28 @@ if (diasporaError) {
 }
 
 
-      setLoading(false);
+    
+
+      
+// 6. Load property inquiries for administrators
+const { data: inquiryData, error: inquiryError } =
+  await supabase.rpc("admin_get_property_inquiries");
+
+if (inquiryError) {
+  console.error("Property inquiries error:", inquiryError);
+  setError((current) =>
+    current
+      ? `${current} Unable to load property inquiries.`
+      : "Unable to load property inquiries."
+  );
+} else {
+  setPropertyInquiries(
+    (inquiryData as PropertyInquiry[] | null) ?? []
+  );
+}
+
+setLoading(false);
+
     }
 
     loadAdminDashboard();
@@ -298,6 +344,45 @@ async function handleDiasporaStatus(
 
   setUpdatingDiasporaId(null);
 }
+
+
+async function handleInquiryStatus(
+  inquiryId: number,
+  newStatus: string
+) {
+  setUpdatingInquiryId(inquiryId);
+  setError("");
+
+  const { error: statusError } = await supabase.rpc(
+    "admin_set_property_inquiry_status",
+    {
+      target_inquiry_id: inquiryId,
+      new_status: newStatus,
+    }
+  );
+
+  if (statusError) {
+    console.error("Inquiry status error:", statusError);
+    setError(statusError.message);
+    setUpdatingInquiryId(null);
+    return;
+  }
+
+  setPropertyInquiries((currentInquiries) =>
+    currentInquiries.map((inquiry) =>
+      inquiry.id === inquiryId
+        ? {
+            ...inquiry,
+            status: newStatus,
+            updated_at: new Date().toISOString(),
+          }
+        : inquiry
+    )
+  );
+
+  setUpdatingInquiryId(null);
+}
+
   if (loading) {
     return (
       <>
@@ -344,7 +429,7 @@ async function handleDiasporaStatus(
           )}
 
           {/* Stats */}
-         <section className="grid gap-5 md:grid-cols-3">
+        <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Pending properties
@@ -377,6 +462,25 @@ async function handleDiasporaStatus(
     {diasporaRequests.filter((request) => request.status === "new").length} new
   </p>
 </div>
+
+
+<div className="rounded-2xl border bg-white p-6 shadow-sm">
+  <p className="text-sm font-medium text-gray-500">
+    Property inquiries
+  </p>
+
+  <p className="mt-2 text-4xl font-bold text-gray-900">
+    {propertyInquiries.length}
+  </p>
+
+  <p className="mt-2 text-sm text-gray-500">
+    {propertyInquiries.filter(
+      (inquiry) => inquiry.status === "new"
+    ).length}{" "}
+    new
+  </p>
+</div>
+
           </section>
 
           {/* Pending Properties */}
@@ -706,6 +810,112 @@ async function handleDiasporaStatus(
     </div>
   )}
 </section>
+
+{/* Property Inquiries */}
+<section className="mt-12">
+  <div className="mb-5">
+    <h2 className="text-2xl font-bold text-gray-900">
+      Property Inquiries
+    </h2>
+    <p className="mt-1 text-gray-600">
+      Buyers requesting FasoHome assistance with a property.
+    </p>
+  </div>
+
+  {propertyInquiries.length === 0 ? (
+    <div className="rounded-2xl border bg-white p-8 text-gray-600 shadow-sm">
+      No property inquiries have been submitted yet.
+    </div>
+  ) : (
+    <div className="grid gap-5">
+      {propertyInquiries.map((inquiry) => (
+        <div
+          key={inquiry.id}
+          className="rounded-2xl border bg-white p-6 shadow-sm"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-xl font-bold text-gray-900">
+              Inquiry #{inquiry.id}
+            </h3>
+
+           
+<select
+  value={inquiry.status}
+  disabled={updatingInquiryId === inquiry.id}
+  onChange={(event) =>
+    handleInquiryStatus(inquiry.id, event.target.value)
+  }
+  aria-label={`Status for inquiry ${inquiry.id}`}
+  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-green-700 focus:ring-2 focus:ring-green-100 disabled:opacity-60"
+>
+  <option value="new">New</option>
+  <option value="contacted">Contacted</option>
+  <option value="visit_scheduled">Visit Scheduled</option>
+  <option value="negotiating">Negotiating</option>
+  <option value="offer_accepted">Offer Accepted</option>
+  <option value="document_verification">
+    Document Verification
+  </option>
+  <option value="completed">Completed</option>
+  <option value="cancelled">Cancelled</option>
+</select>
+
+          </div>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Submitted: {new Date(inquiry.created_at).toLocaleString()}
+          </p>
+
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <div className="space-y-2 text-sm text-gray-700">
+              <h4 className="font-bold text-gray-900">Buyer</h4>
+              <p><strong>Name:</strong> {inquiry.full_name}</p>
+              <p>
+                <strong>Email:</strong>{" "}
+                <a href={`mailto:${inquiry.email}`} className="text-green-700 hover:underline">
+                  {inquiry.email}
+                </a>
+              </p>
+              <p><strong>Phone:</strong> {inquiry.phone}</p>
+              <p><strong>WhatsApp:</strong> {inquiry.whatsapp || "Not provided"}</p>
+              <p><strong>Country:</strong> {inquiry.country_of_residence || "Not provided"}</p>
+            </div>
+
+            <div className="space-y-2 text-sm text-gray-700">
+              <h4 className="font-bold text-gray-900">Property</h4>
+              <p>
+                <strong>Property ID:</strong> {inquiry.property_id}
+              </p>
+              <Link
+                href={`/properties/${inquiry.property_id}`}
+                className="inline-block font-semibold text-green-700 hover:underline"
+              >
+                View property →
+              </Link>
+              <p>
+                <strong>Preferred visit:</strong>{" "}
+                {inquiry.preferred_visit_date || "Not specified"}
+              </p>
+            </div>
+          </div>
+
+          {inquiry.message && (
+            <div className="mt-5 border-t pt-5">
+              <h4 className="font-bold text-gray-900">
+                Buyer message
+              </h4>
+              <p className="mt-2 whitespace-pre-wrap text-gray-700">
+                {inquiry.message}
+              </p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+
+
         </div>
       </main>
     </>
