@@ -6,11 +6,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 import { supabase } from "../lib/supabase";
 
 export default function Header() {
   const router = useRouter();
+  const t = useTranslations("Navigation");
 
   const [user, setUser] = useState<User | null>(null);
   const [accountType, setAccountType] = useState<string | null>(null);
@@ -122,39 +125,39 @@ export default function Header() {
             href="/search?type=sale"
             className="font-semibold text-gray-900 hover:text-green-700"
           >
-            Buy
+             {t("buy")}
           </Link>
 
           <Link
             href="/search?type=rent"
             className="font-semibold text-gray-900 hover:text-green-700"
           >
-            Rent
+           {t("rent")}
           </Link>
 
           <Link
             href="/search?propertyType=land"
             className="font-semibold text-gray-900 hover:text-green-700"
           >
-            Land
+             {t("land")}
           </Link>
 
           <Link
             href="/agencies"
             className="font-semibold text-gray-900 hover:text-green-700"
           >
-            Agencies
+           {t("agencies")}
           </Link>
         </nav>
 
         {/* Desktop account navigation */}
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden items-center gap-3 xl:gap-4 lg:flex">
           {!loading && (
             <Link
               href={listPropertyHref}
               className="whitespace-nowrap rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800"
             >
-              List a property
+          {t("listProperty")}
             </Link>
           )}
 
@@ -164,14 +167,14 @@ export default function Header() {
                 href="/login"
                 className="whitespace-nowrap font-semibold text-gray-700 hover:text-green-700"
               >
-                Sign in
+                {t("signIn")}
               </Link>
 
               <Link
                 href="/signup"
                 className="whitespace-nowrap rounded-lg border border-green-700 px-4 py-3 font-semibold text-green-700 hover:bg-green-50"
               >
-                Create account
+            {t("signUp")}
               </Link>
             </>
           )}
@@ -183,7 +186,7 @@ export default function Header() {
                   href="/agency/dashboard"
                   className="font-semibold text-green-700 hover:text-green-800"
                 >
-                  Dashboard
+               {t("dashboard")}
                 </Link>
               )}
 
@@ -191,18 +194,19 @@ export default function Header() {
                 href="/profile"
                 className="font-semibold text-gray-700 hover:text-green-700"
               >
-                Profile
+              {t("profile")}
               </Link>
 
               <button
                 type="button"
                 onClick={handleLogout}
-                className="whitespace-nowrap font-semibold text-red-600 hover:text-red-700"
+              className="whitespace-nowrap rounded-lg bg-green-700 px-3 py-2.5 text-sm font-semibold text-white hover:bg-green-800"
               >
-                Log out
+               {t("logout")}
               </button>
             </>
           )}
+          <LanguageSwitcher />
         </div>
 
         {/* Mobile menu button */}
@@ -261,7 +265,7 @@ export default function Header() {
               onClick={closeMenu}
               className="rounded-lg px-4 py-3 font-semibold text-gray-900 hover:bg-green-50"
             >
-              Buy
+             {t("buy")}
             </Link>
 
             <Link
@@ -269,7 +273,7 @@ export default function Header() {
               onClick={closeMenu}
               className="rounded-lg px-4 py-3 font-semibold text-gray-900 hover:bg-green-50"
             >
-              Rent
+             {t("rent")}
             </Link>
 
             <Link
@@ -277,7 +281,7 @@ export default function Header() {
               onClick={closeMenu}
               className="rounded-lg px-4 py-3 font-semibold text-gray-900 hover:bg-green-50"
             >
-              Land
+             {t("land")}
             </Link>
 
             <Link
@@ -285,8 +289,14 @@ export default function Header() {
               onClick={closeMenu}
               className="rounded-lg px-4 py-3 font-semibold text-gray-900 hover:bg-green-50"
             >
-              Agencies
+             {t("agencies")}
             </Link>
+
+            <div className="px-4 py-3">
+  <LanguageSwitcher />
+</div>
+
+            
 
             {!loading && (
               <>
@@ -297,7 +307,7 @@ export default function Header() {
                   onClick={closeMenu}
                   className="rounded-lg bg-green-700 px-4 py-3 text-center font-semibold text-white hover:bg-green-800"
                 >
-                  List a property
+                  {t("listProperty")}
                 </Link>
 
                 {!user ? (
@@ -307,7 +317,7 @@ export default function Header() {
                       onClick={closeMenu}
                       className="rounded-lg px-4 py-3 font-semibold text-gray-700 hover:bg-green-50"
                     >
-                      Sign in
+                     {t("signIn")}
                     </Link>
 
                     <Link
@@ -315,7 +325,7 @@ export default function Header() {
                       onClick={closeMenu}
                       className="rounded-lg px-4 py-3 font-semibold text-green-700 hover:bg-green-50"
                     >
-                      Create account
+                     {t("signUp")}
                     </Link>
                   </>
                 ) : (
@@ -326,7 +336,7 @@ export default function Header() {
                         onClick={closeMenu}
                         className="rounded-lg px-4 py-3 font-semibold text-green-700 hover:bg-green-50"
                       >
-                        Dashboard
+                       {t("dashboard")}
                       </Link>
                     )}
 
@@ -335,7 +345,7 @@ export default function Header() {
                       onClick={closeMenu}
                       className="rounded-lg px-4 py-3 font-semibold text-gray-700 hover:bg-green-50"
                     >
-                      Profile
+                  {t("profile")}
                     </Link>
 
                     <button
@@ -343,7 +353,7 @@ export default function Header() {
                       onClick={handleLogout}
                       className="rounded-lg px-4 py-3 text-left font-semibold text-red-600 hover:bg-red-50"
                     >
-                      Log out
+                     {t("logout")}
                     </button>
                   </>
                 )}

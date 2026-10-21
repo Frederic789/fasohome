@@ -1,0 +1,21 @@
+
+{
+  "Navigation": {
+    "buy": "Acheter",
+    "rent": "Louer",
+    "land": "Terrains",
+    "agencies": "Agences",
+    "listProperty": "Publier un bien",
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "logout": "Se déconnecter"
+  },
+  "Home": {
+    "title": "Trouvez un logement en toute confiance",
+    "subtitle": "Découvrez des maisons, appartements et terrains au Burkina Faso.",
+    "featured": "Biens immobiliers à la une",
+    "search": "Rechercher"
+  }
+}

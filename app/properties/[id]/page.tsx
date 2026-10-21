@@ -100,19 +100,7 @@ if (property.owner_id) {
   agency = agencyData;
 }
 
-  const whatsappNumber =
-    property.whatsapp_number || property.phone_number;
-
-  const cleanedWhatsAppNumber =
-    whatsappNumber.replace(/[^\d]/g, "");
-
-  const whatsappMessage = encodeURIComponent(
-    `Hello, I am interested in ${property.title} listed on FasoHome.`
-  );
-
-  const whatsappLink =
-    `https://wa.me/${cleanedWhatsAppNumber}?text=${whatsappMessage}`;
-
+ 
   return (
     <main className="min-h-screen bg-gray-50">
       <Header />
@@ -288,41 +276,31 @@ if (property.owner_id) {
               For {property.transaction_type}
             </p>
 
-            <div className="mt-6 border-t pt-6">
-              <p className="text-sm font-semibold text-gray-500">
-                Contact number
-              </p>
+            
+<div className="mt-6 border-t pt-6">
+  <h3 className="text-xl font-bold text-gray-900">
+    Interested in this property?
+  </h3>
 
-              <a
-                href={`tel:${property.phone_number}`}
-                className="mt-1 block text-lg font-bold text-gray-900 hover:text-green-700"
-              >
-                {property.phone_number}
-              </a>
-            </div>
+  <p className="mt-3 text-sm leading-6 text-gray-600">
+    FasoHome will help you arrange a property visit,
+    communicate with the seller, negotiate the price,
+    and coordinate the purchase process.
+  </p>
 
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 block rounded-lg bg-green-700 px-5 py-4 text-center font-bold text-white hover:bg-green-800"
-            >
-              Contact on WhatsApp
-            </a>
+  <Link
+    href={`/properties/${property.id}/inquire`}
+    className="mt-6 block rounded-lg bg-green-700 px-5 py-4 text-center font-bold text-white transition hover:bg-green-800"
+  >
+    I&apos;m interested in this property →
+  </Link>
 
-            <button
-              type="button"
-              className="mt-3 w-full rounded-lg bg-yellow-500 px-5 py-4 font-bold text-gray-950 hover:bg-yellow-400"
-            >
-              Request a visit
-            </button>
+  <p className="mt-4 text-center text-xs leading-5 text-gray-500">
+    Your inquiry will be sent directly to the FasoHome team.
+  </p>
+</div>
 
-            <button
-              type="button"
-              className="mt-3 w-full rounded-lg border border-gray-300 px-5 py-4 font-semibold text-gray-700 hover:bg-gray-50"
-            >
-              Report this listing
-            </button>
+             
 
             {agency && (
   <div className="mt-6 border-t pt-6">

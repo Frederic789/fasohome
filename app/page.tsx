@@ -150,9 +150,12 @@ if (error) {
             tour, or live video visit before making a decision.
           </p>
 
-          <button className="mt-7 rounded-lg bg-yellow-500 px-6 py-3 font-bold text-gray-950 hover:bg-yellow-400">
-            Request an inspection
-          </button>
+         <Link
+  href="/diaspora"
+  className="mt-7 inline-block rounded-lg bg-yellow-500 px-6 py-3 font-bold text-gray-950 hover:bg-yellow-400"
+>
+  Explore FasoHome Diaspora
+</Link>
         </div>
       </section>
     </main>
