@@ -27,8 +27,15 @@ export default function PropertyInquiryPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    async function loadUser() {
-      const { data } = await supabase.auth.getUser();
+   async function loadUser() {
+  console.log("STEP 1: Starting authentication check");
+
+  const { data, error: authError } = await supabase.auth.getUser();
+
+  console.log("STEP 2: Authentication finished", {
+    signedIn: !!data.user,
+    error: authError?.message,
+  });
 
       if (!data.user) {
         router.replace(
@@ -97,7 +104,7 @@ export default function PropertyInquiryPage() {
     return (
       <main className="min-h-screen bg-gray-50">
         <Header />
-        <p className="p-10 text-center">
+        <p className="p-10 text-center text-gray-900">
           Loading your inquiry form...
         </p>
       </main>
@@ -152,21 +159,49 @@ export default function PropertyInquiryPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-            <Field label="Full name" value={fullName} onChange={setFullName} required />
-            <Field label="Email" value={email} onChange={setEmail} type="email" required />
-            <Field label="Phone number" value={phone} onChange={setPhone} required />
-            <Field label="WhatsApp number" value={whatsapp} onChange={setWhatsapp} />
-            <Field label="Country of residence" value={country} onChange={setCountry} />
+           <Field
+  label="Full name"
+  value={fullName}
+  onChange={setFullName}
+  required
+/>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Preferred visit date (optional)
-              </label>
+<Field
+  label="Email"
+  value={email}
+  onChange={setEmail}
+  type="email"
+  required
+/>
+
+<Field
+  label="Phone number"
+  value={phone}
+  onChange={setPhone}
+  required
+/>
+
+<Field
+  label="WhatsApp number"
+  value={whatsapp}
+  onChange={setWhatsapp}
+/>
+
+<Field
+  label="Country of residence"
+  value={country}
+  onChange={setCountry}
+/>
+
+<div>
+  <label className="mb-2 block text-sm font-semibold text-gray-700">
+    Preferred visit date (optional)
+  </label>
               <input
                 type="date"
                 value={visitDate}
                 onChange={(e) => setVisitDate(e.target.value)}
-                className="w-full rounded-lg border px-4 py-3"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200"
               />
             </div>
 
@@ -178,7 +213,7 @@ export default function PropertyInquiryPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
-                className="w-full rounded-lg border px-4 py-3"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200"
                 placeholder="Tell us how we can assist you..."
               />
             </div>
@@ -223,13 +258,13 @@ function Field({
       <label className="mb-2 block text-sm font-semibold text-gray-700">
         {label}
       </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className="w-full rounded-lg border px-4 py-3"
-      />
+     <input
+  type={type}
+  value={value}
+  onChange={(e) => onChange(e.target.value)}
+  required={required}
+  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200"
+/>
     </div>
   );
 }
