@@ -47,6 +47,93 @@ if (error) {
             across Burkina Faso.
           </p>
 
+          
+<form
+  action="/search"
+  method="GET"
+  className="mx-auto mt-10 max-w-4xl rounded-2xl bg-white p-5 text-left shadow-xl"
+>
+  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Buy or Rent
+      </span>
+      <select
+        name="type"
+        defaultValue=""
+        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900"
+      >
+        <option value="">All listings</option>
+        <option value="sale">Buy</option>
+        <option value="rent">Rent</option>
+      </select>
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        City or neighborhood
+      </span>
+      <input
+        type="text"
+        name="location"
+        placeholder="e.g. Ouagadougou"
+        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 placeholder:text-gray-500"
+      />
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Property type
+      </span>
+      <select
+        name="propertyType"
+        defaultValue=""
+        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900"
+      >
+        <option value="">All property types</option>
+        <option value="villa">House / Villa</option>
+        <option value="apartment">Apartment</option>
+        <option value="land">Land</option>
+      </select>
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Minimum bedrooms
+      </span>
+      <select
+        name="bedrooms"
+        defaultValue=""
+        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900"
+      >
+        <option value="">Any bedrooms</option>
+        <option value="1">1+</option>
+        <option value="2">2+</option>
+        <option value="3">3+</option>
+        <option value="4">4+</option>
+        <option value="5">5+</option>
+      </select>
+    </label>
+  </div>
+
+  <div className="mt-5 flex flex-wrap items-center gap-3">
+    <button
+      type="submit"
+      className="rounded-lg bg-green-700 px-6 py-3 font-bold text-white hover:bg-green-800"
+    >
+      Search Properties
+    </button>
+
+    <Link
+      href="/search"
+      className="rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-100"
+    >
+      Advanced Filters →
+    </Link>
+  </div>
+</form>
+
+
      
 </div>
  </section>

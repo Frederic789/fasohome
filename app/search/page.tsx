@@ -123,65 +123,135 @@ if (sort === "price-low") {
 
       
 
-        <form
+<form
   action="/search"
   method="GET"
-  className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4"
+  className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
 >
-  <input type="hidden" name="type" value={type} />
-  <input
-    type="hidden"
-    name="propertyType"
-    value={propertyType}
-  />
-  <input
-    type="hidden"
-    name="location"
-    value={location}
-  />
-  <input
-    type="hidden"
-    name="minPrice"
-    value={minPrice || ""}
-  />
-  <input
-    type="hidden"
-    name="maxPrice"
-    value={maxPrice || ""}
-  />
-  <input
-    type="hidden"
-    name="bedrooms"
-    value={bedrooms || ""}
-  />
+  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Buy or Rent
+      </span>
+      <select
+        name="type"
+        defaultValue={type}
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900"
+      >
+        <option value="">All listings</option>
+        <option value="sale">Buy</option>
+<option value="rent">Rent</option>
+      </select>
+    </label>
 
-  <label className="block">
-    <span className="mb-2 block text-sm font-semibold text-gray-700">
-      Sort results
-    </span>
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        City or neighborhood
+      </span>
+      <input
+        type="text"
+        name="location"
+        defaultValue={location}
+        placeholder="e.g. Ouagadougou"
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500"
+      />
+    </label>
 
-    <select
-      name="sort"
-      defaultValue={sort}
-      className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900"
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Property type
+      </span>
+      <select
+        name="propertyType"
+        defaultValue={propertyType}
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900"
+      >
+        <option value="">All property types</option>
+       <option value="villa">House / Villa</option>
+<option value="apartment">Apartment</option>
+<option value="land">Land</option>
+      </select>
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Minimum price (FCFA)
+      </span>
+      <input
+        type="number"
+        name="minPrice"
+        min="0"
+        defaultValue={params.minPrice || ""}
+        placeholder="No minimum"
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500"
+      />
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Maximum price (FCFA)
+      </span>
+      <input
+        type="number"
+        name="maxPrice"
+        min="0"
+        defaultValue={params.maxPrice || ""}
+        placeholder="No maximum"
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500"
+      />
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Minimum bedrooms
+      </span>
+      <select
+        name="bedrooms"
+        defaultValue={params.bedrooms || ""}
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900"
+      >
+        <option value="">Any bedrooms</option>
+        <option value="1">1+</option>
+        <option value="2">2+</option>
+        <option value="3">3+</option>
+        <option value="4">4+</option>
+        <option value="5">5+</option>
+      </select>
+    </label>
+
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-gray-700">
+        Sort results
+      </span>
+      <select
+        name="sort"
+        defaultValue={sort}
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900"
+      >
+        <option value="newest">Newest first</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+      </select>
+    </label>
+  </div>
+
+  <div className="mt-6 flex flex-wrap gap-3">
+    <button
+      type="submit"
+      className="rounded-lg bg-green-700 px-6 py-3 font-semibold text-white hover:bg-green-800"
     >
-      <option value="newest">Newest</option>
-      <option value="price-low">
-        Price: low to high
-      </option>
-      <option value="price-high">
-        Price: high to low
-      </option>
-    </select>
-  </label>
+      Search Properties
+    </button>
 
-  <button
-    type="submit"
-    className="rounded-lg bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800"
-  >
-    Apply
-  </button>
+    <Link
+      href="/search"
+      className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-100"
+    >
+      Clear Filters
+    </Link>
+  </div>
 </form>
+
 
         {!properties || properties.length === 0 ? (
           <div className="mt-10 rounded-2xl border bg-white p-10 text-center">
